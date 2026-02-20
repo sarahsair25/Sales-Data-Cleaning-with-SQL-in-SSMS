@@ -91,33 +91,38 @@ Step 10 →  Final quality checks & distribution report
 - Microsoft SQL Server (2016+)
 - SQL Server Management Studio (SSMS 18+)
 
-### Steps
+## Dataset
 
-1. **Clone this repository**
-   ```bash
-   git clone https://github.com/Sarahsair25/sales-data-cleaning-sql.git
-   cd sales-data-cleaning-sql
-   ```
+**File:** `sales.csv`  
+**Columns include:** transaction_id, customer_id, customer_name, email, purchase_date, product_id, category, price, quantity, total_amount, payment_method, delivery_status, customer_address
 
-2. **Create a database in SSMS**
-   ```sql
-   CREATE DATABASE SalesDB;
-   USE SalesDB;
-   ```
+Common data issues handled:
+- Missing category / price / total_amount
+- Invalid emails (missing `@`, missing domain)
+- Mixed / inconsistent payment methods (e.g., `creditcard`, `CC`, `Credit Card`)
+- Duplicate `transaction_id` rows
+- Negative quantity values (treated as returns)
+- Mismatched totals (recomputed from price × quantity)
+- Address field containing newline characters (split into 2 lines)
 
-3. **Import `sales.csv`**
-   - Right-click `SalesDB` → **Tasks → Import Flat File**
-   - Select `sales.csv` and import into `dbo.sales_raw`
+---
+## How to Run
 
-4. **Run the cleaning script**
-   - Open `sales_data_cleaning.sql` in SSMS
-   - Press `F5` or click **Execute**
+### 1) Create tables
+Run the script sections:
+- `sales_staging` (all VARCHAR)
+- `sales_clean` (typed final table)
 
-5. **View the cleaned data**
-   ```sql
-   SELECT TOP 100 * FROM dbo.sales_cleaned;
-   ```
-
+### 2) Import CSV
+Update the path in the script:
+```sql
+BULK INSERT dbo.sales_staging
+FROM 'C:\Data\sales.csv'
+WITH (FIRSTROW=2, FIELDTERMINATOR=',', ROWTERMINATOR='0x0a', CODEPAGE='65001');
+## Tools Used
+- **Microsoft SQL Server**
+- **SQL Server Management Studio (SSMS)**
+- `BULK INSERT`, CTEs, `TRY_CONVERT`, `ROW_NUMBER`, standardization logic
 ---
 
 ## 📊 Results Summary
@@ -146,7 +151,36 @@ Step 10 →  Final quality checks & distribution report
 - DDL: `ALTER TABLE`, `CREATE INDEX`, `ADD CONSTRAINT`
 
 ---
+**Example Insights Queries**
 
+Revenue by category
+
+SELECT category, SUM(total_amount) AS net_revenue
+FROM dbo.vw_sales_analytics
+GROUP BY category
+ORDER BY net_revenue DESC;
+
+Monthly trend
+
+SELECT DATEFROMPARTS(YEAR(purchase_date), MONTH(purchase_date), 1) AS month_start,
+       SUM(total_amount) AS net_revenue
+FROM dbo.vw_sales_analytics
+GROUP BY DATEFROMPARTS(YEAR(purchase_date), MONTH(purchase_date), 1)
+ORDER BY month_start;
+
+What I Practiced
+
+Importing CSV safely using a staging pattern
+
+Cleaning messy text into reliable typed columns
+
+Standardizing categorical values
+
+Data quality rules + anomaly flags
+
+Deduplication strategies with window functions
+
+Building analytics-ready views
 ## 👤 Author
 
 **Sarah Sair**
