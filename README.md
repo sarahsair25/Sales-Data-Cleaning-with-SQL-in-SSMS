@@ -1,3 +1,12 @@
+
+<img width="1536" height="1024" alt="Sale data SSMS" src="https://github.com/user-attachments/assets/48520bb9-b528-4a31-b8ba-7cc1805e6931" />
+
+
+
+
+
+
+
 # 🧹 Sales Data Cleaning with SQL in SSMS
 
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-SSMS-blue?logo=microsoftsqlserver)
